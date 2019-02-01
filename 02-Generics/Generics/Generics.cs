@@ -123,7 +123,7 @@ namespace Task.Generics
                 throw new IndexOutOfRangeException();
             }
 
-            Array.Sort(array, (x, y) => funcSorted[sortedColumn](x, y) * ascending.GetHashCode());
+            Array.Sort(array, (x, y) => funcSorted[sortedColumn].Invoke(x, y) * ascending.GetHashCode());
 		}
 	}
 
@@ -165,7 +165,7 @@ namespace Task.Generics
 		public static T TimeoutSafeInvoke<T>(this Func<T> function)
         {
             // TODO : Implement TimeoutSafeInvoke<T>
-            const int numberAttempts = 3;
+            var numberAttempts = 3;
 
             for (var i = 0; i < numberAttempts - 1; i++)
             {
@@ -208,10 +208,11 @@ namespace Task.Generics
 		/// </example>
 		public static Predicate<T> CombinePredicates<T>(Predicate<T>[] predicates)
         {
-            return delegate (T item)
-            {
-                return !predicates.Any(p => !p.Invoke(item));
-            };
+            return (x) => !predicates.Any(p => !p.Invoke(x));
+            //return delegate (T item)
+            //{
+            //    return !predicates.Any(p => !p.Invoke(item));
+            //};
 		}
 	}
 }
