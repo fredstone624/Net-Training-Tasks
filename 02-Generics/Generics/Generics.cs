@@ -105,11 +105,11 @@ namespace Task.Generics
         ///   }
         /// </example>
         public static void SortTupleArray<T1, T2, T3>(this Tuple<T1, T2, T3>[] array, int sortedColumn, bool ascending)
-            where T1 : IComparable
-            where T2 : IComparable
-            where T3 : IComparable
+            where T1 : IComparable<T1>
+            where T2 : IComparable<T2>
+            where T3 : IComparable<T3>
         {
-            // TODO :SortTupleArray<T1, T2, T3>
+            // TODO : SortTupleArray<T1, T2, T3>
             // HINT : Add required constraints to generic types
             Func<Tuple<T1, T2, T3>, Tuple<T1, T2, T3>, int>[] funcSorted =
             {
@@ -123,7 +123,7 @@ namespace Task.Generics
                 throw new IndexOutOfRangeException();
             }
 
-            Array.Sort(array, (x, y) => funcSorted[sortedColumn].Invoke(x, y) * ascending.GetHashCode());
+            Array.Sort(array, (x, y) => funcSorted[sortedColumn](x, y) * (ascending ? 1 : -1));
 		}
 	}
 
@@ -135,11 +135,12 @@ namespace Task.Generics
     ///   MyService singleton = Singleton<MyService>.Instance;
     /// </example>
     public static class Singleton<T>
-        where T : new()
+        where T : class, new()
     {
         // TODO : Implement generic singleton class 
-        //public static T Instance { get; } = Activator.CreateInstance<T>();
-        public static T Instance { get; } = new T();
+        private static readonly Lazy<T> _lazy = new Lazy<T>(() => new T());
+
+        public static T Instance { get; } = _lazy.Value;
     }
 
 	public static class FunctionExtentions
@@ -171,7 +172,7 @@ namespace Task.Generics
             {
                 try
                 {
-                    return function.Invoke();
+                    return function();
                 }
                 catch (WebException e)
                 {
@@ -179,9 +180,8 @@ namespace Task.Generics
                 }
             }
 
-            return function.Invoke();
+            return function();
         }
-
 
 		/// <summary>
 		///   Combines several predicates using logical AND operator 
@@ -208,11 +208,7 @@ namespace Task.Generics
 		/// </example>
 		public static Predicate<T> CombinePredicates<T>(Predicate<T>[] predicates)
         {
-            return (x) => !predicates.Any(p => !p.Invoke(x));
-            //return delegate (T item)
-            //{
-            //    return !predicates.Any(p => !p.Invoke(item));
-            //};
+            return (x) => !predicates.Any(p => !p(x));
 		}
 	}
 }
