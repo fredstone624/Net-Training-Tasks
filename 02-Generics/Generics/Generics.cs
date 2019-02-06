@@ -118,11 +118,6 @@ namespace Task.Generics
                 (x, y) => x.Item3.CompareTo(y.Item3)
             };
 
-            if(sortedColumn < 0 || sortedColumn > funcSorted.Length - 1)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
             Array.Sort(array, (x, y) => funcSorted[sortedColumn](x, y) * (ascending ? 1 : -1));
 		}
 	}
