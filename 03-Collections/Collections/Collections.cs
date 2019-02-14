@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Collections.Tasks {
 
@@ -12,7 +13,6 @@ namespace Collections.Tasks {
         T Data { get; set; }                             // Custom data
         IEnumerable<ITreeNode<T>> Children { get; set; } // List of childrens
     }
-
 
     public class Task {
 
@@ -30,7 +30,22 @@ namespace Collections.Tasks {
         /// </example>
         public static IEnumerable<int> GetFibonacciSequence(int count) {
             // TODO : Implement Fibonacci sequence generator
-            throw new NotImplementedException();
+
+            if (count < 0)
+            {
+                throw new ArgumentException("count is less then 0");
+            }
+
+            int previous = 0, current = 1;
+
+            for (var i = 0; i < count; i++)
+            {
+                var next = previous + current;
+                previous = current;
+                current = next;
+
+                yield return previous;
+            }
         }
 
         /// <summary>
@@ -48,10 +63,22 @@ namespace Collections.Tasks {
         public static IEnumerable<string> Tokenize(TextReader reader) {
             char[] delimeters = new[] { ',', ' ', '.', '\t', '\n' };
             // TODO : Implement the tokenizer
-            throw new NotImplementedException();
+
+            if (reader == null)
+            {
+                throw new ArgumentNullException("reader");
+            }
+
+            string line;
+
+            while ((line = reader.ReadLine()) != null)
+            {
+                foreach (var word in line.Split(delimeters, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    yield return word;
+                }
+            }
         }
-
-
 
         /// <summary>
         ///   Traverses a tree using the depth-first strategy
@@ -66,7 +93,7 @@ namespace Collections.Tasks {
         ///    
         ///                      1
         ///                    / | \
-        ///                   2  6  7
+        ///                   2  6  7 
         ///                  / \     \
         ///                 3   4     8
         ///                     |
@@ -76,7 +103,28 @@ namespace Collections.Tasks {
         /// </example>
         public static IEnumerable<T> DepthTraversalTree<T>(ITreeNode<T> root) {
             // TODO : Implement the tree depth traversal algorithm
-            throw new NotImplementedException(); 
+
+            if(root == null)
+            {
+                throw new ArgumentNullException("root");
+            }
+
+            var stack = new Stack<ITreeNode<T>>(new[] { root });
+
+            while(stack.Count != 0)
+            {
+                yield return stack.Peek().Data;
+
+                var rootChildrens = stack.Pop().Children;
+
+                if(rootChildrens != null)
+                {
+                    for (var i = rootChildrens.Count() - 1; i >= 0; --i)
+                    {
+                        stack.Push(rootChildrens.ElementAt(i));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -102,10 +150,26 @@ namespace Collections.Tasks {
         /// </example>
         public static IEnumerable<T> WidthTraversalTree<T>(ITreeNode<T> root) {
             // TODO : Implement the tree width traversal algorithm
-            throw new NotImplementedException();
+
+            if(root == null)
+            {
+                throw new ArgumentNullException("root");
+            }
+
+            var queue = new Queue<ITreeNode<T>>(new[] { root });
+
+            while(queue.Count != 0)
+            {
+                yield return queue.Peek().Data;
+
+                var rootChilrens = queue.Dequeue().Children;
+
+                if(rootChilrens != null)
+                {
+                    Array.ForEach(rootChilrens.ToArray(), (x) => queue.Enqueue(x));
+                }
+            }
         }
-
-
 
         /// <summary>
         ///   Generates all permutations of specified length from source array
@@ -126,9 +190,49 @@ namespace Collections.Tasks {
         /// </example>
         public static IEnumerable<T[]> GenerateAllPermutations<T>(T[] source, int count) {
             // TODO : Implement GenerateAllPermutations method
-            throw new NotImplementedException();
+
+            if (count > source.Length || count < 0)
+            {
+                throw new ArgumentOutOfRangeException("count", "count is less then 0 or greater then the source length");
+            }
+
+            var bitMask = new bool[source.Length];
+
+            while(NextPermutations(bitMask))
+            {
+                if(bitMask.Count(x => x) == count)
+                {
+                    // Получаем массив индексов из bitMask, где el == true
+                    var listOfIndexes = bitMask.Select((el, idx) => new { el, idx }).Where(t => t.el).Select(t => t.idx).ToArray();
+                    // Формируем новый массив элементов, индексы которых есть в listOfIndexes
+                    yield return source.Where((el, idx) => listOfIndexes.Contains(idx)).ToArray();
+
+                    //var list = new List<T>();
+                    //for (var i = 0; i < bitMask.Length; i++)
+                    //{
+                    //    if (bitMask[i]) list.Add(source[i]);
+                    //}
+                    //yield return list.ToArray();
+                }
+            }
         }
 
+        private static bool NextPermutations(bool[] mask)
+        {
+            var i = 0;
+
+            while (i < mask.Length && mask[i])
+            {
+                mask[i++] = false;
+            }
+
+            if (i < mask.Length)
+            {
+                return mask[i] = true;
+            }
+
+            return false;
+        }
     }
 
     public static class DictionaryExtentions {
@@ -153,8 +257,16 @@ namespace Collections.Tasks {
         /// </example>
         public static TValue GetOrBuildValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> builder) {
             // TODO : Implement GetOrBuildValue method for cache
-            throw new NotImplementedException();
-        }
 
+            if(dictionary.ContainsKey(key))
+            {
+                return dictionary[key];
+            }
+
+            var value = builder();
+            dictionary.Add(key, value);
+
+            return value;
+        }
     }
 }
