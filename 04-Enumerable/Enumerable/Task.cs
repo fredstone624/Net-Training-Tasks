@@ -102,7 +102,7 @@ namespace EnumerableTask
                 throw new ArgumentNullException(nameof(prefix), "prefix is null");
             }
 
-            return data.Where(x => x?.StartsWith(prefix.ToLowerInvariant()) ?? false);
+            return data.Where(x => x?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ?? false); // #4
         }
 
 
@@ -117,7 +117,7 @@ namespace EnumerableTask
         /// </example>
         public IEnumerable<T> GetEvenItems<T>(IEnumerable<T> data) {
             // TODO : Implement GetEvenItems
-            return data.Where((val, idx) => ((idx + 1) % 2).Equals(0));
+            return data.Where((val, idx) => idx % 2 == 1);  // #5
         }
 
 
@@ -192,7 +192,7 @@ namespace EnumerableTask
         /// </example>
         public IEnumerable<int> Get3TopItems(IEnumerable<int> data) {
             // TODO : Implement Get3TopItems
-            return data.Reverse().Take(3);
+            return data.OrderByDescending(x => x).Take(3);  // #6
         }
 
 
@@ -225,7 +225,7 @@ namespace EnumerableTask
         /// </example>
         public string GetFirstContainsFirst(IEnumerable<string> data) {
             // TODO : Implement GetFirstContainsFirst
-            return data.FirstOrDefault(x => x?.ToLower().Contains("first") ?? false);
+            return data.FirstOrDefault(x => !x?.IndexOf("first", StringComparison.OrdinalIgnoreCase).Equals(-1) ?? false);  // #4
         }
 
 
@@ -277,7 +277,7 @@ namespace EnumerableTask
         /// </example>
         public int GetCountOfStringsWithMaxLength(IEnumerable<string> data) {
             // TODO : Implement GetCountOfStringsWithMaxLength
-            return data.Count().Equals(0) ? 0 : data.GroupBy(x => x?.Length ?? 0).OrderByDescending(x => x.Key).First().Count();
+            return data.Count() == 0 ? 0 : data.GroupBy(x => x?.Length ?? 0).OrderByDescending(x => x.Key).First().Count(); // #7
         }
 
 
@@ -380,7 +380,7 @@ namespace EnumerableTask
         /// </example>
         public IEnumerable<string> SortStringsByLengthAndAlphabet(IEnumerable<string> data) {
             // TODO : Implement SortStringsByLengthAndAlphabet
-            return data.OrderBy(x => x.Length).ThenBy(x => x).ToList();
+            return data.OrderBy(x => x.Length).ThenBy(x => x);  // #8
         }
 
 
@@ -398,9 +398,10 @@ namespace EnumerableTask
             // TODO : Implement GetMissingDigits
 
             //var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-            var digits = Enumerable.Range(0, 10).Select(x => char.Parse(x.ToString()));
+            //var digits = Enumerable.Range(0, 10).Select(x => char.Parse(x.ToString()));
+            var digits = "0123456789";  // #9
 
-            return digits.Except(data.SelectMany(x => x.ToCharArray()));
+            return digits.Except(data.SelectMany(x => x));
         }
 
 
@@ -454,9 +455,10 @@ namespace EnumerableTask
         ///   {"a","aa","aaa"} => {"a"}
         ///   {"ab","ba","aabb","baba"} => {"a","b"}
         /// </example>
-        public IEnumerable<char> GetCommonChars(IEnumerable<string> data) { // ???
+        public IEnumerable<char> GetCommonChars(IEnumerable<string> data) {
             // TODO : Implement GetCommonChars
-            return data.SelectMany(x => x).Where(x => data.All(y => y.Contains(x))).Distinct().OrderBy(x => x);
+            //return data.SelectMany(x => x).Where(x => data.All(y => y.Contains(x))).Distinct().OrderBy(x => x);
+            return data.DefaultIfEmpty(string.Empty).Aggregate<IEnumerable<char>>((x, y) => x.Intersect(y));    // #10
         }
 
 
@@ -544,7 +546,7 @@ namespace EnumerableTask
         /// </example>
         public bool IsAllStringsAreUppercase(IEnumerable<string> data) {
             // TODO : Implement IsAllStringsAreUppercase
-            return data.DefaultIfEmpty().All(x => !string.IsNullOrEmpty(x) && x.ToUpperInvariant().Equals(x));
+            return data.DefaultIfEmpty().All(x => !string.IsNullOrEmpty(x) && x.All(char.IsUpper)); // #4
         }
 
 
