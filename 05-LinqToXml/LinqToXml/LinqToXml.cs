@@ -85,10 +85,7 @@ namespace LinqToXml
         /// <returns>Concatenation of all this element values.</returns>
         public static string GetConcatenationString(string xmlRepresentation)
         {
-            return string.Join("", XElement.Parse(xmlRepresentation)
-                .Elements("Sentence")
-                .Select(x => x.Value)
-            );
+            return XElement.Parse(xmlRepresentation).Value;
         }
 
         /// <summary>
